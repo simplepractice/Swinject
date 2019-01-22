@@ -71,6 +71,21 @@ extension Container {
         return resolve(serviceType, name: nil, <%= arg_param_name %>: <%= arg_param_call %>)
     }
 
+    /// Retrieves the instance with the specified service type and <%= arg_param_description %> to the factory closure.
+    ///
+    /// - Parameters:
+    ///   - serviceType: The service type to resolve.
+    ///   - <%= arg_param_name %>:   <%= arg_param_description.capitalize %> to pass to the factory closure.
+    ///
+    /// - Returns: The resolved service type instance, or cause fatalError() if no registration for the service type
+    ///            and <%= arg_param_description %> is found in the `Container`.
+    public func unsafeResolve<Service, <%= arg_types %>>(
+      _ serviceType: Service.Type,
+      <%= arg_param_def %>) -> Service
+    {
+      return unsafeResolve(serviceType, name: nil, <%= arg_param_name %>: <%= arg_param_call %>)
+    }
+
     /// Retrieves the instance with the specified service type, <%= arg_param_description %> to the factory closure and registration name.
     ///
     /// - Parameters:
@@ -87,6 +102,24 @@ extension Container {
     {
         typealias FactoryType = ((Resolver, <%= arg_types %>)) -> Any
         return _resolve(name: name) { (factory: FactoryType) in factory((self, <%= arg_param_call %>)) }
+    }
+
+    /// Retrieves the instance with the specified service type, <%= arg_param_description %> to the factory closure and registration name.
+    ///
+    /// - Parameters:
+    ///   - serviceType: The service type to resolve.
+    ///   - name:        The registration name.
+    ///   - <%= arg_param_name %>:   <%= arg_param_description.capitalize %> to pass to the factory closure.
+    ///
+    /// - Returns: The resolved service type instance, or cause fatalError() if no registration for the service type,
+    ///            <%= arg_param_description %> and name is found in the `Container`.
+    public func unsafeResolve<Service, <%= arg_types %>>(
+      _ serviceType: Service.Type,
+      name: String?,
+      <%= arg_param_def %>) -> Service
+    {
+        typealias FactoryType = ((Resolver, <%= arg_types %>)) -> Any
+        return _unsafeResolve(name: name) { (factory: FactoryType) in factory((self, <%= arg_param_call %>)) }
     }
 
 <% end %>

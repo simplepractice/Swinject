@@ -21,4 +21,19 @@ public protocol _Resolver {
         option: ServiceKeyOption?,
         invoker: @escaping ((Arguments) -> Any) -> Any
     ) -> Service?
+
+    /// This method is designed for the use to extend Swinject functionality.
+    /// Do NOT use this method unless you intend to write an extension or plugin to Swinject framework.
+    ///
+    /// - Parameter name: The registration name.
+    /// - Parameter option: A service key option for an extension/plugin.
+    /// - Parameter invoker: A closure to execute service resolution.
+    ///
+    /// - Returns: The resolved service type instance, or cause fatalError() if no service is found.
+    // swiftlint:disable:next identifier_name
+    func _unsafeResolve<Service, Arguments>(
+      name: String?,
+      option: ServiceKeyOption?,
+      invoker: @escaping ((Arguments) -> Any) -> Any
+    ) -> Service
 }

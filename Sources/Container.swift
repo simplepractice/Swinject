@@ -177,6 +177,36 @@ public final class Container {
 // MARK: - _Resolver
 
 extension Container: _Resolver {
+  public func _unsafeResolve<Service, Arguments>(
+      name: String?,
+      option: ServiceKeyOption? = nil,
+      invoker: @escaping ((Arguments) -> Any) -> Any
+    ) -> Service {
+        var resolvedInstance: Service?
+        let key = ServiceKey(serviceType: Service.self, argumentsType: Arguments.self, name: name, option: option)
+
+        if let entry = getEntry(for: key) {
+          resolvedInstance = resolve(entry: entry, invoker: invoker)
+        }
+
+        if resolvedInstance == nil {
+          resolvedInstance = resolveAsWrapper(name: name, option: option, invoker: invoker)
+        }
+
+        if resolvedInstance == nil {
+          debugHelper.resolutionFailed(
+            serviceType: Service.self,
+            key: key,
+            availableRegistrations: getRegistrations()
+          )
+        }
+
+        guard let result =  resolvedInstance else {
+              fatalError("Service with type \(type(of: Service.self)) is not found")
+        }
+        return result
+    }
+
     // swiftlint:disable:next identifier_name
     public func _resolve<Service, Arguments>(
         name: String?,
@@ -261,6 +291,13 @@ extension Container: _Resolver {
 // MARK: - Resolver
 
 extension Container: Resolver {
+  public func unsafeResolve<Service>(_ serviceType: Service.Type) -> Service {
+    guard let service = resolve(serviceType) else {
+      fatalError("Service with type \(serviceType) is not found")
+    }
+    return service
+  }
+
     /// Retrieves the instance with the specified service type.
     ///
     /// - Parameter serviceType: The service type to resolve.
@@ -282,6 +319,11 @@ extension Container: Resolver {
     public func resolve<Service>(_: Service.Type, name: String?) -> Service? {
         return _resolve(name: name) { (factory: (Resolver) -> Any) in factory(self) }
     }
+
+    public func unsafeResolve<Service>(_ serviceType: Service.Type, name: String?) -> Service {
+      return _unsafeResolve(name: name) { (factory: (Resolver) -> Any) in factory(self) }
+    }
+
 
     fileprivate func getEntry(for key: ServiceKey) -> ServiceEntryProtocol? {
         if let entry = services[key] {
